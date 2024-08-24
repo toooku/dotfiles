@@ -1,0 +1,27 @@
+cask_args appdir: "/Applications"
+tap "homebrew/bundle"
+
+
+brew "tree"
+brew "python@3.10"
+brew "pyenv"
+brew "openjdk"
+
+cask "google-chrome"
+cask "docker"
+
+# cask "jetbrains-toolbox"
+# cask "pycharm"
+# cask "intellij-idea"
+cask "visual-studio-code"
+
+cask "adobe-creative-cloud"
+
+cask "google-drive"
+cask "1password"
+cask "spotify"
+cask "slack"
+cask "zoom"
+cask "iterm2"
+cask "coteditor"
+cask "postman"
