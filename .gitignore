@@ -1,0 +1,47 @@
+# Files specific to macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Trash directory
+.Trashes
+
+# macOS system files
+.Spotlight-V100
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.localized
+.PKInstallSandboxManager-SystemSoftware
+.SymAVQSFile
+
+# Vim swap files and history
+*.swp
+*.swo
+*.swn
+*.un~
+Session.vim
+
+# Specific editor settings
+.idea/
+.vscode/
+
+# Other cache and binary files
+.cache/
+.history
+*.log
+*.bak
+*.tmp
+*.lock
+
+# Shell history
+.bash_history
+.zsh_history
+
+# SSH, GPG, and other sensitive files
+.ssh/
+.gnupg/
+.id_rsa
+.id_rsa.pub
