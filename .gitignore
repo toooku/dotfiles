@@ -45,3 +45,17 @@ Session.vim
 .gnupg/
 .id_rsa
 .id_rsa.pub
+
+# local only
+*.local
+.zshrc.local
+_backup/
+
+# Neovim cache
+nvim/.config/nvim/.lazy/
+nvim/.config/nvim/lazy-lock.json
+
+# mise cache
+mise/.config/mise/cache/
+mise/.config/mise/state/
+

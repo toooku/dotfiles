@@ -1,0 +1,9 @@
+[user]
+	name = toku
+  email = tokunagatukasa@gmail.com
+
+[core]
+  excludesfile = ~/.gitignore_global
+
+[pull]
+  rebase = false

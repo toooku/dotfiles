@@ -1,0 +1,88 @@
+name: dotfiles-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-and-stow:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh stow shellcheck lua-check
+
+      # --- Safety: reject absolute symlinks inside repo ---
+      - name: Fail on absolute symlinks
+        run: |
+          set -euo pipefail
+          # Any symlink whose target starts with "/" is an absolute symlink → reject
+          if find . -type l -print0 | xargs -0 -I{} sh -c 't=$(readlink "{}" || true); [ -n "$t" ] && printf "%s -> %s\n" "{}" "$t"' \
+            | awk '$3 ~ /^\//' | tee /tmp/abs_symlinks.txt | grep -q .; then
+            echo "ERROR: absolute symlinks found (not stow-safe):"
+            cat /tmp/abs_symlinks.txt
+            exit 1
+          fi
+
+      # --- Basic syntax checks ---
+      - name: bash syntax check
+        run: |
+          set -euo pipefail
+          if [ -f bootstrap.sh ]; then
+            bash -n bootstrap.sh
+          fi
+          # check all .sh files too
+          shopt -s nullglob
+          for f in **/*.sh; do
+            bash -n "$f"
+          done
+
+      - name: zsh syntax check
+        run: |
+          set -euo pipefail
+          if [ -f zsh/.zshrc ]; then
+            zsh -n zsh/.zshrc
+          fi
+
+      - name: ShellCheck
+        run: |
+          set -euo pipefail
+          # shellcheck everything that looks like shell
+          files=$(git ls-files | grep -E '\.sh$|(^|/)\.(bash|zsh)rc$|(^|/)\.zsh$' || true)
+          if [ -n "${files}" ]; then
+            echo "$files" | xargs shellcheck
+          fi
+
+      - name: Lua check (wezterm / others)
+        run: |
+          set -euo pipefail
+          lua_files=$(git ls-files | grep -E '\.lua$' || true)
+          if [ -n "${lua_files}" ]; then
+            echo "$lua_files" | xargs luacheck --globals wezterm
+          fi
+
+      # --- Stow dry-run into a clean HOME ---
+      - name: Stow dry-run into temp HOME
+        run: |
+          set -euo pipefail
+          TEST_HOME="$(mktemp -d)"
+          mkdir -p "$TEST_HOME/.config"
+          echo "TEST_HOME=$TEST_HOME"
+
+          # stow each package if directory exists
+          for pkg in zsh bin git wezterm nvim mise ssh gh karabiner bat; do
+            if [ -d "$pkg" ]; then
+              echo "== stow -n -v -t $TEST_HOME $pkg"
+              stow -n -v -t "$TEST_HOME" "$pkg"
+            fi
+          done
+
+          # optional: ensure bootstrap.sh is executable if present
+          if [ -f bootstrap.sh ]; then
+            test -x bootstrap.sh || echo "NOTE: bootstrap.sh is not executable (chmod +x recommended)"
+          fi

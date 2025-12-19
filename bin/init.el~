@@ -1,0 +1,173 @@
+;; パッケージ取得先
+(require 'package)
+(setq package-archives
+      '(("gnu"   . "https://elpa.gnu.org/packages/")
+        ("melpa" . "https://melpa.org/packages/")))
+(package-initialize)
+(unless package-archive-contents (package-refresh-contents))
+
+;; 日本語環境の設定
+
+(set-language-environment "Japanese")
+(prefer-coding-system 'utf-8)
+(set-default 'buffer-file-coding-system 'utf-8)
+
+;; 行番号を表示
+(setq display-line-numbers-type t)
+(global-display-line-numbers-mode t)
+
+;; 時間を表示
+(display-time)
+
+;; 現在いる行を目立たせる
+(global-hl-line-mode)
+
+;; 画面内に対応する括弧がある場合は括弧だけを、ない場合は括弧で囲まれた部分をハイライト
+(setq show-paren-style 'mixed)
+
+;; スクロールの加速をやめる
+(setq mouse-wheel-progressive-speed nil)
+
+
+;; Org modeの設定
+
+;; ファイルの場所
+(setq org-directory "~/Org")
+;;(setq org-directory "~/Dropbox/Org")
+(setq org-default-notes-file "notes.org")
+
+;; Org-captureの設定
+
+
+;; Org-modeで折り返しを設定
+(setq org-startup-truncated nil)
+
+;; Org-captureを呼び出すキーシーケンス
+(define-key global-map "\C-cc" 'org-capture)
+;; Org-captureのテンプレート（メニュー）の設定
+(setq org-capture-templates
+      '(("n" "Note" entry (file+headline "~/Org/notes.org" "Notes")
+         "* %?\nEntered on %U\n %i\n %a")
+        ))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+;; web-mode（.vue も担当）
+(use-package web-mode
+  :ensure t
+  :mode ("\\.vue\\'" "\\.html\\'")
+  :hook ((web-mode . my/web-mode-setup))
+  :init
+  (defun my/web-mode-setup ()
+    ;; .vue のときだけ LSP を起動
+    (when (and buffer-file-name
+               (string-match-p "\\.vue\\'" buffer-file-name))
+      (lsp-deferred)))
+  :config
+  (setq web-mode-markup-indent-offset 2
+        web-mode-code-indent-offset   2
+        web-mode-css-indent-offset    2))
+
+;; LSP 本体
+(use-package lsp-mode
+  :ensure t
+  :commands (lsp lsp-deferred)
+  :hook ((lsp-mode . lsp-enable-which-key-integration))
+  :custom
+  ;; パフォーマンス・体験向上系
+  (lsp-idle-delay 0.2)
+  (lsp-log-io nil)
+  (lsp-completion-provider :none)) ; company/corfu を自分で選ぶため
+
+;; Volar クライアント（lsp-mode に同梱）
+;; これで vue-language-server を使う
+(use-package lsp-volar
+  :after lsp-mode
+  :ensure nil) ;; lsp-mode 同梱なので別インストール不要
+
+;; UI（サイドラインで診断表示など）
+(use-package lsp-ui
+  :ensure t
+  :after lsp-mode
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-delay 0.2)
+  (lsp-ui-sideline-enable t)
+  (lsp-ui-doc-enable t))
+
+;; 補完（company 版）
+(use-package company
+  :ensure t
+  :hook (after-init . global-company-mode)
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+;; スニペット
+(use-package yasnippet
+  :ensure t
+  :hook (prog-mode . yas-minor-mode))
+(use-package yasnippet-snippets :ensure t)
+
+;; 保存時に eslint_d --fix を走らせる（.vue/.js/.ts）
+(defun my/eslint-fix-buffer ()
+  "Run eslint_d --fix on the current file."
+  (interactive)
+  (when (and buffer-file-name
+             (executable-find "eslint_d")
+             (or (string-match-p "\\.vue\\'" buffer-file-name)
+                 (string-match-p "\\.jsx?\\'" buffer-file-name)
+                 (string-match-p "\\.tsx?\\'" buffer-file-name)))
+    (let ((cmd (format "eslint_d --fix %s" (shell-quote-argument buffer-file-name))))
+      (shell-command cmd)
+      (revert-buffer t t t))))
+
+(add-hook 'before-save-hook #'my/eslint-fix-buffer)
+
+(defun my/prettier-format-buffer ()
+  "Run prettier on the current buffer."
+  (interactive)
+  (when (and buffer-file-name
+             (executable-find "prettier")
+             (or (string-match-p "\\.vue\\'" buffer-file-name)
+                 (string-match-p "\\.jsx?\\'" buffer-file-name)
+                 (string-match-p "\\.tsx?\\'" buffer-file-name)
+                 (string-match-p "\\.css\\'"  buffer-file-name)
+                 (string-match-p "\\.scss\\'" buffer-file-name)
+                 (string-match-p "\\.html\\'" buffer-file-name)))
+    (let ((pos (point)))
+      (call-process "prettier" nil nil nil "--write" buffer-file-name)
+      (revert-buffer t t t)
+      (goto-char pos))))
+
+(setq lsp-auto-guess-root t)
+
+
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration '(web-mode . "vue"))
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection
+    (lsp-stdio-connection
+     (lambda ()
+       (let* ((root (lsp-workspace-root default-directory))
+              (server (expand-file-name "node_modules/@vue/language-server/bin/vue-language-server.js" root)))
+         (list "node" "--stdio" server))))
+    :activation-fn (lsp-activate-on "vue")
+    :priority 1
+    :server-id 'vue-custom)))
+
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
