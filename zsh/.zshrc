@@ -1,3 +1,4 @@
+# shellcheck shell=zsh
 ############################
 # Basic zsh options
 ############################
