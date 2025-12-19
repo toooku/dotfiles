@@ -1,4 +1,4 @@
-# shellcheck shell=zsh
+# shellcheck disable=SC2148
 ############################
 # Basic zsh options
 ############################
