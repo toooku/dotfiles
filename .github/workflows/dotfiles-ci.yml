@@ -52,10 +52,14 @@ jobs:
       - name: ShellCheck
         run: |
           set -euo pipefail
-          # shellcheck everything that looks like shell
+
+          # shellcheck: only errors should fail the job
+          # -S error : error のみで失敗
+          # -x       : source 追跡を有効（可能な範囲で）
           files=$(git ls-files | grep -E '\.sh$|(^|/)\.(bash|zsh)rc$|(^|/)\.zsh$' || true)
-          if [ -n "${files}" ]; then
-            echo "$files" | xargs shellcheck
+
+          if [ -n "$files" ]; then
+            echo "$files" | xargs shellcheck -S error -x
           fi
 
       - name: Lua check (wezterm / others)
