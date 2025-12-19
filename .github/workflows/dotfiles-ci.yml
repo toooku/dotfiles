@@ -65,12 +65,9 @@ jobs:
       - name: Lua check (wezterm / others)
         run: |
           set -eo pipefail
-          tmpfile=$(mktemp)
-          git ls-files | grep -E '\.lua$' > "$tmpfile" || true
-          if [ -s "$tmpfile" ]; then
-            while IFS= read -r file; do
-              [ -n "$file" ] && luacheck --globals wezterm "$file"
-            done < "$tmpfile"
+          lua_files=$(git ls-files -z -- '*.lua' || true)
+          if [ -n "$lua_files" ]; then
+            printf '%s' "$lua_files" | xargs -0 luacheck --globals wezterm
           fi
           rm -f "$tmpfile"
 
