@@ -4,7 +4,7 @@
   "extends": ["config:base"],
 
   "timezone": "Asia/Tokyo",
-  "schedule": ["every monday after 9am"],
+  "schedule": ["after 09:00 on Monday"],
 
   "labels": ["renovate"],
   "dependencyDashboard": true,
@@ -18,7 +18,7 @@
   "semanticCommits": true,
   "semanticCommitType": "chore",
 
-  "brewfile": {
+  "homebrew": {
     "enabled": true
   },
 
@@ -28,8 +28,8 @@
 
   "packageRules": [
     {
-      "matchManagers": ["brewfile"],
-      "groupName": "brew dependencies",
+      "matchManagers": ["homebrew"],
+      "groupName": "homebrew dependencies",
       "separateMajorMinor": false
     }
   ],
