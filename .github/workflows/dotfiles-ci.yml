@@ -67,9 +67,7 @@ jobs:
           set -euo pipefail
           lua_files=$(git ls-files | grep -E '\.lua$' || true)
           if [ -n "${lua_files}" ]; then
-            echo "$lua_files" | while IFS= read -r file; do
-              luacheck --globals wezterm "$file"
-            done
+            echo "$lua_files" | xargs -n 1 luacheck --globals wezterm
           fi
 
       # --- Stow dry-run into a clean HOME ---
