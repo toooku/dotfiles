@@ -65,10 +65,8 @@ jobs:
       - name: Lua check (wezterm / others)
         run: |
           set -eo pipefail
-          lua_files=$(git ls-files -z -- '*.lua' || true)
-          if [ -n "$lua_files" ]; then
-            printf '%s' "$lua_files" | xargs -0 luacheck --globals wezterm
-          fi
+          git ls-files -z -- '*.lua' \
+            | xargs -0 -r luacheck --globals wezterm
           rm -f "$tmpfile"
 
       # --- Stow dry-run into a clean HOME ---
