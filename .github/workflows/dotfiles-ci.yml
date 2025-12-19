@@ -65,9 +65,14 @@ jobs:
       - name: Lua check (wezterm / others)
         run: |
           set -eo pipefail
-          while IFS= read -r file; do
-            [ -n "$file" ] && luacheck --globals wezterm "$file"
-          done < <(git ls-files | grep -E '\.lua$' || true)
+          tmpfile=$(mktemp)
+          git ls-files | grep -E '\.lua$' > "$tmpfile" || true
+          if [ -s "$tmpfile" ]; then
+            while IFS= read -r file; do
+              [ -n "$file" ] && luacheck --globals wezterm "$file"
+            done < "$tmpfile"
+          fi
+          rm -f "$tmpfile"
 
       # --- Stow dry-run into a clean HOME ---
       - name: Stow dry-run into temp HOME
