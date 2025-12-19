@@ -1,38 +1,38 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-
-  "extends": ["config:base"],
-
+  "extends": [
+    "config:recommended"
+  ],
   "timezone": "Asia/Tokyo",
-  "schedule": ["after 09:00 on Monday"],
-
-  "labels": ["renovate"],
+  "schedule": [
+    "after 09:00 on Monday"
+  ],
+  "labels": [
+    "renovate"
+  ],
   "dependencyDashboard": true,
-
   "prHourlyLimit": 2,
   "prConcurrentLimit": 5,
-
   "automerge": false,
   "platformAutomerge": false,
-
-  "semanticCommits": true,
+  "semanticCommits": "enabled",
   "semanticCommitType": "chore",
-
   "homebrew": {
     "enabled": true
   },
-
   "github-actions": {
     "enabled": true
   },
-
   "packageRules": [
     {
-      "matchManagers": ["homebrew"],
+      "matchManagers": [
+        "homebrew"
+      ],
       "groupName": "homebrew dependencies",
       "separateMajorMinor": false
     }
   ],
-
-  "ignorePaths": ["**/lazy-lock.json"]
+  "ignorePaths": [
+    "**/lazy-lock.json"
+  ]
 }
