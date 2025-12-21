@@ -15,7 +15,7 @@ brew bundle --file="$DOTFILES_DIR/Brewfile"
 
 for dir in zsh bin git wezterm nvim mise; do
   if [ -d "$dir" ]; then
-    echo "stow $dir"
+    echo "stow -t ~ $dir"
     stow "$dir"
   fi
 done
