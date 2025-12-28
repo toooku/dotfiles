@@ -87,4 +87,34 @@ config.colors = {
 config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = false
 
+config.keys = {
+  -- Alt + v で垂直分割 (Vertical)
+  {
+    key = 'v',
+    mods = 'ALT',
+    action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' },
+  },
+  -- Alt + s で水平分割 (Split)
+  {
+    key = 's',
+    mods = 'ALT',
+    action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
+  },
+  -- Alt + 矢印キーでペイン間を移動
+  { key = 'LeftArrow',  mods = 'ALT', action = wezterm.action.ActivatePaneDirection 'Left' },
+  { key = 'RightArrow', mods = 'ALT', action = wezterm.action.ActivatePaneDirection 'Right' },
+  { key = 'UpArrow',    mods = 'ALT', action = wezterm.action.ActivatePaneDirection 'Up' },
+  { key = 'DownArrow',  mods = 'ALT', action = wezterm.action.ActivatePaneDirection 'Down' },
+}
+
+-- 日本語入力（IME）をウィンドウ内のカーソル位置で表示する
+config.use_ime = true
+
+config.font = wezterm.font_with_fallback({
+  -- メインの英数フォント
+  { family = 'JetBrains Mono', weight = 'Medium' },
+  -- 日本語用フォント
+  { family = 'Hiragino Sans', weight = 'Medium' },
+})
+
 return config

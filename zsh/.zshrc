@@ -132,3 +132,5 @@ mi=38;5;160\
 
 # local (machine-specific)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+export LANG=ja_JP.UTF-8
+export LC_ALL=ja_JP.UTF-8
