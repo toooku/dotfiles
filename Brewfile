@@ -41,7 +41,7 @@ brew "hugo"
 brew "awscli"
 brew "azure-cli"
 brew "railway"
-brew "hashicorp/tap/terraform"
+brew "hashicorp/tap/terraform", trusted: true
 brew "terraform-docs"
 brew "tflint"
 brew "trivy"
