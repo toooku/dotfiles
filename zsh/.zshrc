@@ -130,6 +130,14 @@ mi=38;5;160\
 [[ "$TERM_PROGRAM" == "kiro" ]] && \
   . "$(kiro --locate-shell-integration-path zsh)"
 
+# pnpm
+export PNPM_HOME="$HOME/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+
 # local (machine-specific)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 export LANG=ja_JP.UTF-8

@@ -18,7 +18,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y zsh stow shellcheck lua-check
+          sudo apt-get install -y zsh stow shellcheck lua-check jq
 
       # --- Safety: reject absolute symlinks inside repo ---
       - name: Fail on absolute symlinks
@@ -65,14 +65,23 @@ jobs:
             echo "$files" | xargs shellcheck -S error -x
           fi
 
-      - name: Lua check (wezterm / others)
+      - name: Lua check (wezterm / nvim)
         run: |
-          set -eo pipefail
-          git ls-files -z -- '*.lua' || true \
-            | while IFS= read -r -d '' file; do
-                luacheck --globals wezterm "$file"
-              done
-          rm -f "$tmpfile"
+          set -euo pipefail
+          git ls-files -z -- '*.lua' | while IFS= read -r -d '' file; do
+            # 終了コード 1 は警告のみなので通し、2 以上(構文エラーなど)で失敗させる
+            luacheck --globals wezterm vim --no-max-line-length "$file" || [ $? -eq 1 ]
+          done
+
+      - name: Claude settings merge
+        run: |
+          set -euo pipefail
+          CLAUDE_CONFIG_DIR="$(mktemp -d)"
+          export CLAUDE_CONFIG_DIR
+          echo '{"permissions":{"allow":["Bash(echo:*)"]},"theme":"dark"}' > "$CLAUDE_CONFIG_DIR/settings.json"
+          scripts/claude-settings.sh
+          jq -e '.theme == "dark" and (.permissions.allow | index("Bash(echo:*)"))' "$CLAUDE_CONFIG_DIR/settings.json"
+          jq -e '.theme == "dark"' "$CLAUDE_CONFIG_DIR/settings.private.json"
 
       # --- Stow dry-run into a clean HOME ---
       - name: Stow dry-run into temp HOME
@@ -83,7 +92,7 @@ jobs:
           echo "TEST_HOME=$TEST_HOME"
 
           # stow each package if directory exists
-          for pkg in zsh bin git wezterm nvim mise ssh gh karabiner bat; do
+          for pkg in zsh git wezterm nvim mise emacs vscode claude; do
             if [ -d "$pkg" ]; then
               echo "== stow -n -v -t $TEST_HOME $pkg"
               stow -n -v -t "$TEST_HOME" "$pkg"

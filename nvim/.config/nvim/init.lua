@@ -22,6 +22,10 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+-- エンコーディング設定
+vim.o.encoding = "utf-8"
+vim.cmd("language ja_JP.UTF-8")
+
 -- 表示設定
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -171,22 +175,47 @@ require("lazy").setup({
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
-      -- Vue TypeScriptプラグインの設定
+      -- Vue TypeScriptプラグインのパスを取得（安全に）
       local vue_language_server_path = vim.fn.stdpath("data")
         .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
-      local tsserver_filetypes = {
-        "typescript",
-        "javascript",
-        "javascriptreact",
-        "typescriptreact",
-        "vue",
+      
+      -- 可能であればMasonのレジストリからパスを取得（エラー時は標準パスを使用）
+      local mason_registry = require("mason-registry")
+      local ok, package = pcall(function()
+        return mason_registry.get_package("vue-language-server")
+      end)
+      if ok and package and package:is_installed() then
+        vue_language_server_path = package:get_install_path()
+          .. "/node_modules/@vue/language-server"
+      end
+
+      -- ts_lsを先に設定・有効化（vue_lsが依存しているため）
+      local ts_ls_config = {
+        capabilities = capabilities,
+        filetypes = {
+          "javascript",
+          "typescript",
+          "javascriptreact",
+          "typescriptreact",
+          "vue",
+        },
       }
-      local vue_plugin = {
-        name = "@vue/typescript-plugin",
-        location = vue_language_server_path,
-        languages = { "vue" },
-        configNamespace = "typescript",
-      }
+
+      -- Vueプラグインが存在する場合のみ追加
+      if vim.fn.isdirectory(vue_language_server_path) == 1 then
+        ts_ls_config.init_options = {
+          plugins = {
+            {
+              name = "@vue/typescript-plugin",
+              location = vue_language_server_path,
+              languages = { "javascript", "typescript", "vue" },
+            },
+          },
+        }
+      end
+
+      vim.lsp.config("ts_ls", ts_ls_config)
+      vim.lsp.enable("ts_ls")
 
       -- Masonのセットアップ
       mason.setup()
@@ -194,27 +223,31 @@ require("lazy").setup({
         ensure_installed = {
           "lua_ls",
           "ts_ls",
-          "vue_ls",
+          "vue_ls", -- Vue.js (旧volar、名称変更済み)
           "tailwindcss",
           "eslint",
-          "ruby_ls",
+          "ruby_lsp",
           "pyright",
-          "ruff_lsp",
+          "ruff",
         },
         handlers = {
-          -- ts_lsの設定（vue_lsより先に設定）
-          ["ts_ls"] = function()
-            vim.lsp.config("ts_ls", {
-              capabilities = capabilities,
-              init_options = {
-                plugins = { vue_plugin },
-              },
-              filetypes = tsserver_filetypes,
-            })
-            vim.lsp.enable("ts_ls")
+          -- デフォルトのハンドラー（特別な設定がいらないサーバー用）
+          function(server_name)
+            -- ts_ls、vue_ls、lua_lsは個別に設定済みなのでスキップ
+            if server_name ~= "ts_ls" and server_name ~= "vue_ls" and server_name ~= "lua_ls" then
+              vim.lsp.config(server_name, {
+                capabilities = capabilities,
+              })
+              vim.lsp.enable(server_name)
+            end
           end,
 
-          -- vue_lsの設定（ts_lsに依存）
+          -- ts_lsは既に設定済みなのでスキップ
+          ["ts_ls"] = function()
+            -- 既に設定済み
+          end,
+
+          -- vue_ls (旧volar) の設定
           ["vue_ls"] = function()
             vim.lsp.config("vue_ls", {
               capabilities = capabilities,
@@ -255,32 +288,30 @@ require("lazy").setup({
             vim.lsp.enable("vue_ls")
           end,
 
-          -- その他のサーバーのデフォルトハンドラー
-          function(server_name)
-            if server_name ~= "ts_ls" and server_name ~= "vue_ls" then
-              vim.lsp.config(server_name, {
-                capabilities = capabilities,
-              })
-              vim.lsp.enable(server_name)
-            end
+          -- lua_ls の設定
+          ["lua_ls"] = function()
+            vim.lsp.config("lua_ls", {
+              capabilities = capabilities,
+              settings = {
+                Lua = {
+                  runtime = { version = "LuaJIT" },
+                  diagnostics = { globals = { "vim" } },
+                  workspace = {
+                    library = vim.api.nvim_get_runtime_file("", true),
+                    checkThirdParty = false, 
+                  },
+                },
+              },
+            })
+            vim.lsp.enable("lua_ls")
           end,
         },
       })
 
-      -- lua_lsの特別な設定
-      vim.lsp.config("lua_ls", {
-        capabilities = capabilities,
-        settings = {
-          Lua = {
-            runtime = { version = "LuaJIT" },
-            diagnostics = { globals = { "vim" } },
-          },
-        },
-      })
-      vim.lsp.enable("lua_ls")
+      -- ts_lsは既に設定・有効化済みなので、vue_lsが依存できる
     end,
   },
-
+  
   -- 補完
   {
     "hrsh7th/nvim-cmp",
@@ -309,6 +340,32 @@ require("lazy").setup({
         },
       })
     end,
+  },
+
+  -- vim.ui.input()をフローティングウィンドウにする
+  {
+    "stevearc/dressing.nvim",
+    opts = {},
+  },
+
+  -- Fusen (バッファ・タブ管理)
+  {
+    "walkersumida/fusen.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require("fusen").setup({
+        -- ここに設定オプションを追加できます
+      })
+      local map = vim.keymap.set
+      map("n", "<leader>ft", "<cmd>FusenToggle<cr>", { desc = "Toggle Fusen" })
+    end,
+  },
+
+  -- フローティングターミナル
+  {
+    "akinsho/toggleterm.nvim",
+    version = "*",
+    opts = {},
   },
 })
 

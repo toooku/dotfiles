@@ -59,3 +59,6 @@ nvim/.config/nvim/lazy-lock.json
 mise/.config/mise/cache/
 mise/.config/mise/state/
 
+
+# Homebrew
+Brewfile.lock.json
