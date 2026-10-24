@@ -41,7 +41,7 @@ backup_conflicts() {
         mv "$target" "$target.bak"
       fi
     fi
-  done < <(cd "$pkg" && find . \( -type f -o -type l \) ! -name .stow-local-ignore ! -name settings.base.json)
+  done < <(cd "$pkg" && find . \( -type f -o -type l \) ! -name .stow-local-ignore ! -name settings.base.json ! -name .DS_Store)
 }
 
 for pkg in "${PACKAGES[@]}"; do
