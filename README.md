@@ -1,143 +1,95 @@
 # dotfiles
 
-dotfilesリポジトリです。GNU Stowを使用してシンボリックリンクで管理しています。
+macOS 用の dotfiles です。設定ファイルは GNU Stow でホームディレクトリにリンクし、アプリと CLI は `Brewfile` で管理しています。
 
-## 📋 概要
+## 含まれるもの
 
-このリポジトリには以下の設定が含まれています：
+| パッケージ | リンク先 | 内容 |
+| --- | --- | --- |
+| `zsh` | `~/.zshrc` | zsh の設定(zinit, pure, mise, zoxide など) |
+| `git` | `~/.gitconfig` | Git の設定 |
+| `wezterm` | `~/.config/wezterm/` | WezTerm の設定 |
+| `nvim` | `~/.config/nvim/` | Neovim の設定(lazy.nvim) |
+| `mise` | `~/.config/mise/` | Node / Ruby などのバージョン管理 |
+| `emacs` | `~/.emacs.d/init.el` | Emacs の設定 |
+| `vscode` | `~/Library/Application Support/Code/User/settings.json` | VS Code の設定 |
+| `claude` | `~/.claude/rules/` | Claude Code のルール |
 
-- **zsh**: zshの設定ファイル（`.zshrc`）
-- **git**: Gitの設定ファイル（`.gitconfig`）
-- **wezterm**: WezTermの設定ファイル
-- **nvim**: Neovimの設定ファイル
-- **mise**: mise（asdfの代替）の設定
-- **bin**: 各種ユーティリティスクリプト
+ほかに次のファイルがあります。
 
-## 🚀 セットアップ
+- `Brewfile`: Homebrew の formula / cask、App Store アプリ(mas)、VS Code 拡張、uv tool
+- `claude/settings.base.json`: Claude Code の `~/.claude/settings.json` のうち共通部分
+- `scripts/claude-settings.sh`: `~/.claude/settings.json` を生成するスクリプト
+- `scripts/macos-defaults.sh`: Finder や Dock などの macOS 設定(最後に再起動する)
 
-### 前提条件
-
-- macOS（Homebrewが必要）
-- Git
-
-### インストール手順
-
-1. リポジトリをクローン：
+## セットアップ
 
 ```bash
 git clone https://github.com/toooku/dotfiles.git ~/dotfiles
 cd ~/dotfiles
-```
-
-2. セットアップスクリプトを実行：
-
-```bash
 ./bootstrap.sh
 ```
 
-このスクリプトは以下を実行します：
-- Homebrewのパッケージをインストール（`Brewfile`から）
-- GNU Stowをインストール
-- 各設定ディレクトリをStowでシンボリックリンク化
+`bootstrap.sh` は次の順に実行します。何度実行しても同じ結果になります。
 
-### 手動セットアップ
+1. Command Line Tools と Homebrew がなければインストールする
+2. `brew bundle` で `Brewfile` の内容をインストールする
+3. 各パッケージを `stow` でリンクする。リンク先に別のファイルがあれば `.bak` を付けて退避する
+4. `scripts/claude-settings.sh` で `~/.claude/settings.json` を生成する
 
-自動セットアップを使わない場合は、以下の手順で手動セットアップできます：
+App Store のアプリ(`mas` の行)は、先に App Store にサインインしておく必要があります。
 
-```bash
-# Homebrewのパッケージをインストール
-brew bundle
-
-# 各設定をStowでリンク
-stow zsh
-stow git
-stow wezterm
-stow nvim
-stow mise
-stow bin
-```
-
-## 📁 ディレクトリ構造
-
-```
-dotfiles/
-├── bootstrap.sh          # セットアップスクリプト
-├── Brewfile              # Homebrewのパッケージリスト
-├── zsh/                  # zsh設定
-│   └── .zshrc
-├── git/                  # Git設定
-│   └── .gitconfig
-├── wezterm/              # WezTerm設定
-│   └── .config/wezterm/
-├── nvim/                 # Neovim設定
-│   └── .config/nvim/
-├── mise/                 # mise設定
-├── bin/                  # ユーティリティスクリプト
-│   ├── brew.sh
-│   ├── defaults.sh
-│   └── ...
-└── .github/              # CI/CD設定
-    └── workflows/
-```
-
-## 🛠️ 管理方法
-
-### 新しい設定を追加する場合
-
-1. 新しいディレクトリを作成（例：`vim/`）
-2. 設定ファイルを配置（例：`vim/.vimrc`）
-3. Stowでリンク：
+既に手で入れたアプリを cask の管理に移すときは、`--adopt` を付けてインストールします。
 
 ```bash
-stow vim
+brew install --cask --adopt chatgpt
 ```
 
-4. `bootstrap.sh`のループにディレクトリ名を追加
+## Claude Code の設定
 
-### 設定を削除する場合
+このリポジトリは公開しているため、`~/.claude/settings.json` はリンクにせず、次の2つを合成して生成します。
+
+- `claude/settings.base.json`: モデル、テーマ、MCP サーバー、プラグインなどの共通設定
+- `~/.claude/settings.private.json`: Git 管理外。業務固有の `autoMode` や、プロジェクト固有の許可ルールを置く
+
+`autoMode` はユーザー設定(`~/.claude/settings.json`)からしか読まれないため、プロジェクト側の設定には移せません。そのため private 側に置いています。
+
+Claude Code が「常に許可」などで `settings.json` に追記した内容は、次にスクリプトを実行したときに private 側へ移されます。共通設定に入れたいものは、`claude/settings.base.json` に手で移してください。
 
 ```bash
-stow -D vim
+scripts/claude-settings.sh
 ```
 
-### 設定を更新する場合
+`~/.claude/rules/` はリンクで管理しているので、編集はそのままリポジトリに反映されます。
 
-設定ファイルを編集後、Stowで再リンク：
+## 管理方法
+
+### パッケージを追加する
+
+1. `<名前>/` ディレクトリを作り、ホームからの相対パスで設定ファイルを置く(例: `tmux/.tmux.conf`)
+2. `bootstrap.sh` の `PACKAGES` に名前を追加する。アプリがディレクトリ内に別のファイルを書き込む場合は `NO_FOLDING` にも追加する
+
+### Brewfile を更新する
+
+`brew bundle dump` は依存で入ったものまで書き出すので、差分を見て必要な行だけ `Brewfile` に足します。
 
 ```bash
-stow -R vim
+brew bundle dump --force --file=/tmp/Brewfile
+diff Brewfile /tmp/Brewfile
 ```
 
-## 🔧 主要なツール
-
-このリポジトリで管理している主要なツール：
-
-- **Neovim**: エディタ
-- **WezTerm**: ターミナルエミュレータ
-- **mise**: ランタイムバージョン管理
-- **zsh**: シェル
-- **Homebrew**: パッケージマネージャー
-
-## 🧪 CI/CD
-
-GitHub Actionsで以下のチェックを実行しています：
-
-- ShellCheck（シェルスクリプトのリント）
-- Lua check（WezTerm/Nvim設定のリント）
-- Stow dry-run（シンボリックリンクの検証）
-
-## 📝 メンテナンス
-
-### Homebrewパッケージの更新
+足りないものの確認とインストールは次のとおりです。
 
 ```bash
-# 現在のパッケージをBrewfileに記録
-brew bundle dump --force
-
-# パッケージを更新
-brew update && brew upgrade
+brew bundle check --verbose
+brew bundle install
 ```
 
-### 設定のバックアップ
+## CI
 
-既存の設定ファイルは`_backup/`ディレクトリに保存されます。
+GitHub Actions で次を確認しています。
+
+- シェルスクリプトの構文チェックと ShellCheck
+- Lua ファイルの luacheck
+- `scripts/claude-settings.sh` の合成結果
+- 一時ディレクトリへの `stow` の dry-run

@@ -1,2 +1,12 @@
 [tools]
+node = "24"
+"npm:@devcontainers/cli" = "latest"
+"npm:vercel" = "latest"
 ruby = "3"
+
+[settings]
+idiomatic_version_file_enable_tools = ["node"]
+idiomatic_version_file_disable_files = ["node:.nvmrc"]
+
+[settings.node]
+corepack = true

@@ -1,94 +1,116 @@
-tap "homebrew/bundle"
-tap "homebrew/services"
-tap "railwaycat/emacsmacport"
-brew "glib"
-brew "gmp"
-brew "openssl@3"
-brew "gnutls"
-brew "emacs", restart_service: :changed
+cask_args appdir: "/Applications"
+
+tap "domt4/autoupdate", trusted: true
+tap "hashicorp/tap"
+
+# --- シェル・CLI ---
 brew "eza"
 brew "fd"
 brew "fzf"
-brew "gcc"
 brew "git"
-brew "harfbuzz"
-brew "hugo"
+brew "gh"
+brew "lazygit"
+brew "ripgrep"
+brew "stow"
+brew "tree"
+brew "zoxide"
+brew "graphviz"
+brew "poppler"
+brew "pinentry-mac"
+brew "mas"
+
+# --- エディタ ---
+brew "neovim"
+brew "emacs", restart_service: :changed
+brew "gcc"
 brew "jansson"
 brew "libgccjit"
-brew "librsvg"
-brew "libyaml"
-brew "neovim"
-brew "node"
+
+# --- 言語・ランタイム(Node / Ruby は mise で管理) ---
+brew "mise"
 brew "openjdk"
 brew "pipx"
 brew "pyenv"
 brew "python@3.10"
 brew "python@3.12"
-brew "ripgrep"
 brew "rust"
-brew "stow"
-brew "tree"
-brew "tree-sitter"
 brew "uv"
-brew "zoxide"
-cask "1password", args: { appdir: "/Applications" }
-cask "adobe-creative-cloud", args: { appdir: "/Applications" }
-cask "coteditor", args: { appdir: "/Applications" }
-cask "cursor"
-cask "docker-desktop", args: { appdir: "/Applications" }
-cask "google-chrome", args: { appdir: "/Applications" }
-cask "google-drive", args: { appdir: "/Applications" }
-cask "intellij-idea", args: { appdir: "/Applications" }
-cask "iterm2", args: { appdir: "/Applications" }
-cask "jetbrains-toolbox", args: { appdir: "/Applications" }
+brew "hugo"
+
+# --- クラウド・インフラ ---
+brew "awscli"
+brew "azure-cli"
+brew "railway"
+brew "hashicorp/tap/terraform", trusted: true
+brew "terraform-docs"
+brew "tflint"
+brew "trivy"
+
+# --- Lint ---
+brew "actionlint"
+brew "shellcheck"
+
+# --- AI ツール ---
+brew "gemini-cli"
+cask "claude-code"
+cask "codex"
+
+# --- Android ---
+brew "scrcpy"
+cask "android-platform-tools"
+
+# --- アプリ ---
+cask "1password"
+cask "chatgpt"
+cask "claude"
+cask "coteditor"
+cask "docker-desktop"
+cask "drawio"
+cask "fastmail"
+cask "google-chrome"
+cask "google-drive"
+cask "iterm2"
+cask "macdown-3000"
 cask "microsoft-outlook"
-cask "postman", args: { appdir: "/Applications" }
-cask "pycharm", args: { appdir: "/Applications" }
-cask "slack", args: { appdir: "/Applications" }
-cask "spotify", args: { appdir: "/Applications" }
-cask "visual-studio-code", args: { appdir: "/Applications" }
+cask "raycast"
+cask "slack"
+cask "spotify"
+cask "visual-studio-code"
 cask "wezterm"
-cask "zoom", args: { appdir: "/Applications" }
+cask "zoom"
+cask "font-jetbrains-mono"
+
+# --- App Store ---
+mas "Between", id: 6743071205
+mas "LINE", id: 539883307
+mas "stone", id: 1230288277
+
+# --- uv tool ---
+uv "pre-commit"
+
+# --- VS Code 拡張 ---
 vscode "8amjp.charactercount"
 vscode "alefragnani.bookmarks"
-vscode "amazonwebservices.aws-toolkit-vscode"
+vscode "anthropic.claude-code"
 vscode "batisteo.vscode-django"
-vscode "bradlc.vscode-tailwindcss"
-vscode "csstools.postcss"
+vscode "christian-kohler.npm-intellisense"
 vscode "danields761.dracula-theme-from-intellij-pythoned"
-vscode "dannysteenman.cloudformation-yaml-snippets"
 vscode "davidanson.vscode-markdownlint"
 vscode "dbaeumer.vscode-eslint"
-vscode "docker.docker"
 vscode "donjayamanne.python-environment-manager"
 vscode "donjayamanne.python-extension-pack"
-vscode "editorconfig.editorconfig"
+vscode "dsznajder.es7-react-js-snippets"
 vscode "esbenp.prettier-vscode"
-vscode "formulahendry.dotnet-test-explorer"
-vscode "github.copilot"
-vscode "github.copilot-chat"
+vscode "formulahendry.auto-rename-tag"
 vscode "github.github-vscode-theme"
-vscode "ics.japanese-proofreading"
-vscode "jamesmaj.easy-icons"
 vscode "kevinrose.vsc-python-indent"
 vscode "magicstack.magicpython"
+vscode "mermaidchart.vscode-mermaid-chart"
 vscode "mgmcdermott.vscode-language-babel"
-vscode "ms-azure-load-testing.microsoft-testing"
-vscode "ms-azuretools.azure-dev"
-vscode "ms-azuretools.vscode-azureappservice"
-vscode "ms-azuretools.vscode-azurecontainerapps"
-vscode "ms-azuretools.vscode-azurefunctions"
-vscode "ms-azuretools.vscode-azureresourcegroups"
-vscode "ms-azuretools.vscode-azurestaticwebapps"
-vscode "ms-azuretools.vscode-azurevirtualmachines"
+vscode "mhutchie.git-graph"
 vscode "ms-azuretools.vscode-containers"
-vscode "ms-azuretools.vscode-cosmosdb"
 vscode "ms-azuretools.vscode-docker"
 vscode "ms-ceintl.vscode-language-pack-ja"
-vscode "ms-dotnettools.csdevkit"
-vscode "ms-dotnettools.csharp"
-vscode "ms-dotnettools.vscode-dotnet-runtime"
-vscode "ms-kubernetes-tools.vscode-kubernetes-tools"
 vscode "ms-python.autopep8"
 vscode "ms-python.black-formatter"
 vscode "ms-python.debugpy"
@@ -96,24 +118,17 @@ vscode "ms-python.flake8"
 vscode "ms-python.isort"
 vscode "ms-python.python"
 vscode "ms-python.vscode-pylance"
+vscode "ms-python.vscode-python-envs"
 vscode "ms-vscode-remote.remote-containers"
-vscode "ms-vscode.makefile-tools"
-vscode "ms-vscode.vscode-node-azure-pack"
 vscode "ms-vscode.vscode-typescript-next"
-vscode "ms-windows-ai-studio.windows-ai-studio"
 vscode "njpwerner.autodocstring"
 vscode "openai.chatgpt"
-vscode "oxc.oxc-vscode"
+vscode "openai.codex-audio"
 vscode "pkief.material-icon-theme"
-vscode "pmcxs.vscode-mindmap"
 vscode "rdebugger.r-debugger"
 vscode "redhat.vscode-xml"
-vscode "redhat.vscode-yaml"
 vscode "reditorsupport.r"
 vscode "reditorsupport.r-syntax"
-vscode "teamsdevapp.vscode-ai-foundry"
-vscode "visualstudioexptteam.intellicode-api-usage-examples"
-vscode "visualstudioexptteam.vscodeintellicode"
 vscode "vue.volar"
 vscode "wholroyd.jinja"
 vscode "yzhang.markdown-all-in-one"

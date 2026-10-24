@@ -1,0 +1,27 @@
+{
+  "update.mode": "start",
+  "workbench.colorTheme": "GitHub Light Default",
+  "workbench.iconTheme": "material-icon-theme",
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 10,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "editor.largeFileOptimizations": false,
+  "redhat.telemetry.enabled": true,
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "javascript.updateImportsOnFileMove.enabled": "never",
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "git.autofetch": true,
+  "claudeCode.preferredLocation": "sidebar",
+  "gitlens.ai.model": "vscode",
+  "gitlens.ai.vscode.model": "copilot:gpt-4.1",
+  "claudeCode.selectedModel": "default",
+  "python.analysis.typeCheckingMode": "standard",
+  "git.confirmSync": false,
+  "update.showReleaseNotes": false
+}
